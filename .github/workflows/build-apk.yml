@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Clone TypeWords source
         run: git clone --depth 1 https://github.com/zyronon/TypeWords.git TypeWords
