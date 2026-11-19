@@ -68,6 +68,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TypeWords-Android-APK
-          path: TypeWords/android/app/build/outputs/apk/release/app-release.apk
+          path: TypeWords/android/app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
           retention-days: 30
