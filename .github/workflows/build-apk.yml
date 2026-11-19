@@ -15,21 +15,21 @@ jobs:
       - name: Check out wrapper repository
         uses: actions/checkout@v4
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-          cache-dependency-path: TypeWords/pnpm-lock.yaml
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Enable pnpm
-        run: corepack enable
 
       - name: Clone TypeWords source
         run: git clone --depth 1 https://github.com/zyronon/TypeWords.git TypeWords
