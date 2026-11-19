@@ -1,0 +1,73 @@
+name: Build TypeWords Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out wrapper repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: TypeWords/pnpm-lock.yaml
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Clone TypeWords source
+        run: git clone --depth 1 https://github.com/zyronon/TypeWords.git TypeWords
+
+      - name: Install dependencies and generate static site
+        working-directory: TypeWords
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run generate
+
+      - name: Add Capacitor Android wrapper
+        working-directory: TypeWords
+        run: |
+          pnpm add @capacitor/core @capacitor/android
+          pnpm add -D @capacitor/cli
+          cat > capacitor.config.ts <<'EOF'
+          import type { CapacitorConfig } from '@capacitor/cli'
+
+          const config: CapacitorConfig = {
+            appId: 'cc.typewords.android',
+            appName: 'TypeWords',
+            webDir: '.output/public',
+            server: { androidScheme: 'https' }
+          }
+
+          export default config
+          EOF
+          pnpm exec cap add android
+          pnpm exec cap sync android
+
+      - name: Build release APK
+        working-directory: TypeWords/android
+        run: ./gradlew assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TypeWords-Android-APK
+          path: TypeWords/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
